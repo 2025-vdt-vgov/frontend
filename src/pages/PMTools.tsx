@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Key, Settings, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -122,17 +121,6 @@ const PMTools = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">PM Tools Integration</h1>
-          <p className="text-gray-600 mt-1">Quản lý kết nối với các công cụ quản lý dự án</p>
-        </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Settings className="w-4 h-4 mr-2" />
-          Cài đặt tổng
-        </Button>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tools.map((tool) => (
           <Card key={tool.id} className="hover:shadow-lg transition-shadow duration-200">

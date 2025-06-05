@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Settings as SettingsIcon, Users, Key, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -55,7 +54,6 @@ const Settings = () => {
 
   const handleSaveSettings = () => {
     console.log('Settings saved:', settings);
-    // Here you would typically save to backend
   };
 
   const getRoleColor = (role: string) => {
@@ -78,11 +76,7 @@ const Settings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Cài đặt hệ thống</h1>
-          <p className="text-gray-600 mt-1">Quản lý cấu hình và người dùng hệ thống</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={handleSaveSettings} className="bg-blue-600 hover:bg-blue-700">
           <Check className="w-4 h-4 mr-2" />
           Lưu cài đặt
@@ -97,7 +91,6 @@ const Settings = () => {
               <SettingsIcon className="w-5 h-5 mr-2" />
               Cài đặt chung
             </CardTitle>
-            <CardDescription>Cấu hình cơ bản của hệ thống</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -152,7 +145,6 @@ const Settings = () => {
         <Card>
           <CardHeader>
             <CardTitle>Cài đặt thông báo</CardTitle>
-            <CardDescription>Quản lý các loại thông báo</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -212,7 +204,6 @@ const Settings = () => {
             <Users className="w-5 h-5 mr-2" />
             Quản lý người dùng
           </CardTitle>
-          <CardDescription>Danh sách người dùng và phân quyền</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -256,7 +247,6 @@ const Settings = () => {
             <Key className="w-5 h-5 mr-2" />
             Bảo mật
           </CardTitle>
-          <CardDescription>Cài đặt bảo mật và quyền truy cập</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

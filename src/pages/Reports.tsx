@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BarChart, Users, Folder, TrendingUp, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -69,11 +68,7 @@ const Reports = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Báo cáo & Thống kê</h1>
-          <p className="text-gray-600 mt-1">Tổng quan về hiệu suất và tiến độ công việc</p>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex space-x-3">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-40">
@@ -141,53 +136,46 @@ const Reports = () => {
       </div>
 
       {/* Report List */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Báo cáo có sẵn</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reports.map((report) => (
-            <Card key={report.id} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <BarChart className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{report.title}</CardTitle>
-                      <CardDescription className="text-sm">{report.description}</CardDescription>
-                    </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {reports.map((report) => (
+          <Card key={report.id} className="hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <BarChart className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{report.title}</CardTitle>
+                    <CardDescription className="text-sm">{report.description}</CardDescription>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
-                      <span className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {new Date(report.lastGenerated).toLocaleDateString('vi-VN')}
-                      </span>
-                      <span>{report.size}</span>
-                    </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-500">
+                  <div className="flex items-center space-x-4">
+                    <span className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {new Date(report.lastGenerated).toLocaleDateString('vi-VN')}
+                    </span>
+                    <span>{report.size}</span>
                   </div>
-                  <Button size="sm" variant="outline">
-                    <Download className="w-3 h-3 mr-1" />
-                    Tải xuống
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <Button size="sm" variant="outline">
+                  <Download className="w-3 h-3 mr-1" />
+                  Tải xuống
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Quick Analytics */}
       <Card>
-        <CardHeader>
-          <CardTitle>Phân tích nhanh</CardTitle>
-          <CardDescription>Một số chỉ số quan trọng trong kỳ báo cáo</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{reportData.productivity.avgTasksPerEmployee}</div>
