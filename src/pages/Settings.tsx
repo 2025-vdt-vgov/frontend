@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Settings as SettingsIcon, Users, Key, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -17,6 +17,8 @@ const Settings = () => {
     autoBackup: true,
     dataRetention: '12',
   });
+
+  const [originalSettings, setOriginalSettings] = useState(settings);
 
   const [users, setUsers] = useState([
     {
@@ -53,7 +55,11 @@ const Settings = () => {
   };
 
   const handleSaveSettings = () => {
-    console.log('Settings saved:', settings);
+    setOriginalSettings(settings);
+  };
+
+  const handleDiscardSettings = () => {
+    setSettings(originalSettings);
   };
 
   const getRoleColor = (role: string) => {
@@ -76,7 +82,15 @@ const Settings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end space-x-2">
+        <Button 
+          variant="outline" 
+          onClick={handleDiscardSettings}
+          className="border-red-200 text-red-600 hover:bg-red-50"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Hủy thay đổi
+        </Button>
         <Button onClick={handleSaveSettings} className="bg-blue-600 hover:bg-blue-700">
           <Check className="w-4 h-4 mr-2" />
           Lưu cài đặt

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart, Users, Folder, TrendingUp, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -68,27 +68,24 @@ const Reports = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <div className="flex space-x-3">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="thisWeek">Tuần này</SelectItem>
-              <SelectItem value="thisMonth">Tháng này</SelectItem>
-              <SelectItem value="thisQuarter">Quý này</SelectItem>
-              <SelectItem value="thisYear">Năm này</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Download className="w-4 h-4 mr-2" />
-            Xuất báo cáo
-          </Button>
-        </div>
+      <div className="flex items-center space-x-3">
+        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="thisWeek">Tuần này</SelectItem>
+            <SelectItem value="thisMonth">Tháng này</SelectItem>
+            <SelectItem value="thisQuarter">Quý này</SelectItem>
+            <SelectItem value="thisYear">Năm này</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Download className="w-4 h-4 mr-2" />
+          Xuất báo cáo
+        </Button>
       </div>
 
-      {/* Statistics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -135,7 +132,6 @@ const Reports = () => {
         </Card>
       </div>
 
-      {/* Report List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {reports.map((report) => (
           <Card key={report.id} className="hover:shadow-lg transition-shadow duration-200">
@@ -147,7 +143,7 @@ const Reports = () => {
                   </div>
                   <div>
                     <CardTitle className="text-base">{report.title}</CardTitle>
-                    <CardDescription className="text-sm">{report.description}</CardDescription>
+                    <p className="text-sm text-gray-500">{report.description}</p>
                   </div>
                 </div>
               </div>
@@ -173,7 +169,6 @@ const Reports = () => {
         ))}
       </div>
 
-      {/* Quick Analytics */}
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

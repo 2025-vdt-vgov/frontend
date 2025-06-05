@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit, Trash, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const Employees = () => {
   const [employees, setEmployees] = useState([
@@ -44,29 +44,21 @@ const Employees = () => {
       status: 'active',
       projects: ['API Gateway'],
     },
-    {
-      id: 4,
-      name: 'Phạm Thị D',
-      email: 'phamthid@company.com',
-      role: 'admin',
-      position: 'UI/UX Designer',
-      department: 'Design',
-      joinDate: '2022-12-05',
-      salary: 30000000,
-      status: 'active',
-      projects: ['Mobile App'],
-    },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [filterProject, setFilterProject] = useState('all');
 
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.position.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'all' || employee.role === filterRole;
-    return matchesSearch && matchesRole;
+    const matchesProject = filterProject === 'all' || 
+                          (filterProject === 'assigned' && employee.projects.length > 0) ||
+                          (filterProject === 'unassigned' && employee.projects.length === 0);
+    return matchesSearch && matchesRole && matchesProject;
   });
 
   const getRoleColor = (role: string) => {
@@ -90,39 +82,49 @@ const Employees = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Quản lý nhân sự</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <div className="flex-1 max-w-md">
+          <Input
+            placeholder="Tìm kiếm nhân viên..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <Button className="bg-blue-600 hover:bg-blue-700 ml-4">
           <Plus className="w-4 h-4 mr-2" />
           Thêm nhân viên
         </Button>
       </div>
 
-      <div className="flex items-center space-x-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Tìm kiếm nhân viên..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-md"
-          />
-        </div>
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Tất cả vai trò</option>
-          <option value="admin">Admin</option>
-          <option value="pm">Project Manager</option>
-          <option value="employee">Nhân viên</option>
-        </select>
+      <div className="flex gap-4">
+        <Select value={filterRole} onValueChange={setFilterRole}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Lọc theo vai trò" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả vai trò</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="pm">Project Manager</SelectItem>
+            <SelectItem value="employee">Nhân viên</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filterProject} onValueChange={setFilterProject}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Lọc theo dự án" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="assigned">Đã phân công</SelectItem>
+            <SelectItem value="unassigned">Chưa phân công</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredEmployees.map((employee) => (
           <Card key={employee.id} className="hover:shadow-lg transition-shadow duration-200">
-            <CardHeader>
-              <div className="flex items-start justify-between">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-medium">
@@ -130,8 +132,8 @@ const Employees = () => {
                     </span>
                   </div>
                   <div>
-                    <CardTitle className="text-lg">{employee.name}</CardTitle>
-                    <p className="text-sm text-gray-500">{employee.position}</p>
+                    <div className="font-medium">{employee.name}</div>
+                    <div className="text-sm text-gray-500">{employee.position}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -143,9 +145,8 @@ const Employees = () => {
                   </Button>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+
+              <div className="mt-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <Badge className={getRoleColor(employee.role)}>
                     {getRoleText(employee.role)}
