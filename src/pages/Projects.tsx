@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit, Trash, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -74,7 +73,6 @@ const Projects = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Quản lý dự án</h1>
         <Button 
           onClick={() => setShowAddForm(true)}
           className="bg-blue-600 hover:bg-blue-700"
@@ -174,3 +172,5 @@ const Projects = () => {
 };
 
 export default Projects;
+
+export default Projects
