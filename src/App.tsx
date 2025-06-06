@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,11 +41,11 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout><DashboardComponent /></Layout>} />
+      <Route path="/reports" element={<Layout><Reports /></Layout>} />
       {(user.role === 'admin' || user.role === 'pm') && (
         <>
           <Route path="/projects" element={<Layout><Projects /></Layout>} />
           <Route path="/employees" element={<Layout><Employees /></Layout>} />
-          <Route path="/reports" element={<Layout><Reports /></Layout>} />
         </>
       )}
       {user.role === 'admin' && (
