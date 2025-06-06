@@ -1,31 +1,19 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, AlertCircle } from 'lucide-react';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isLoading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    const success = await login(username, password);
-    
-    if (!success) {
-      setError('Sai tên đăng nhập hoặc mật khẩu');
-    }
-    
-    setIsLoading(false);
+    await login(email, password);
   };
 
   return (
@@ -45,14 +33,15 @@ const LoginPage = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Tên đăng nhập</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Nhập tên đăng nhập"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nhập email"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -64,11 +53,13 @@ const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Nhập mật khẩu"
                 required
+                disabled={isLoading}
               />
             </div>
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                {error}
+              <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
             <Button 
@@ -83,10 +74,10 @@ const LoginPage = () => {
           <div className="mt-6 text-sm text-muted-foreground">
             <div className="space-y-1">
               <div className="font-medium">Tài khoản demo:</div>
-              <div>• admin - role Admin (tất cả quyền)</div>
-              <div>• pm123 - role PM (không có PM Tools)</div>
-              <div>• developer - role Employee (xem dự án cá nhân)</div>
-              <div className="text-xs mt-2">Mật khẩu: password</div>
+              <div>• admin@viettel.com - Admin</div>
+              <div>• pm@viettel.com - Project Manager</div>
+              <div>• employee@viettel.com - Employee</div>
+              <div className="text-xs mt-2">Mật khẩu: admin123</div>
             </div>
           </div>
         </CardContent>
