@@ -50,7 +50,7 @@ const AppContent = () => {
   const requiredRoles = restrictedRoutes[currentPath as keyof typeof restrictedRoutes];
   
   if (requiredRoles && !requiredRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/\" replace />;
   }
 
   const DashboardComponent = user.role === 'employee' ? EmployeeDashboard : Dashboard;
