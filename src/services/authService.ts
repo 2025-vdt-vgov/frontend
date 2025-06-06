@@ -3,7 +3,81 @@ import { API_CONFIG } from '@/config/api';
 import { LoginRequest, LoginResponse, RefreshTokenRequest } from '@/types/api';
 
 class AuthService {
+  // Mock users for development
+  private mockUsers = [
+    {
+      email: 'admin@viettel.com',
+      password: 'admin123',
+      response: {
+        accessToken: 'mock_admin_token',
+        refreshToken: 'mock_admin_refresh',
+        tokenType: 'Bearer',
+        employeeId: 1,
+        email: 'admin@viettel.com',
+        name: 'System Administrator',
+        role: 'ADMIN'
+      }
+    },
+    {
+      email: 'pm@viettel.com',
+      password: 'admin123',
+      response: {
+        accessToken: 'mock_pm_token',
+        refreshToken: 'mock_pm_refresh',
+        tokenType: 'Bearer',
+        employeeId: 2,
+        email: 'pm@viettel.com',
+        name: 'Project Manager',
+        role: 'PROJECT_MANAGER'
+      }
+    },
+    {
+      email: 'employee@viettel.com',
+      password: 'admin123',
+      response: {
+        accessToken: 'mock_employee_token',
+        refreshToken: 'mock_employee_refresh',
+        tokenType: 'Bearer',
+        employeeId: 3,
+        email: 'employee@viettel.com',
+        name: 'Employee User',
+        role: 'EMPLOYEE'
+      }
+    }
+  ];
+
   async login(credentials: LoginRequest): Promise<LoginResponse> {
+    // Use mock authentication for now
+    const mockUser = this.mockUsers.find(
+      user => user.email === credentials.email && user.password === credentials.password
+    );
+
+    if (!mockUser) {
+      throw {
+        code: 401,
+        message: 'Email hoặc mật khẩu không đúng'
+      };
+    }
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const response = mockUser.response;
+    
+    // Store tokens
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    localStorage.setItem('user', JSON.stringify({
+      id: response.employeeId.toString(),
+      email: response.email,
+      fullName: response.name,
+      role: this.mapBackendRoleToFrontend(response.role),
+    }));
+    
+    return response;
+
+    // TODO: Uncomment this when ready to use real backend
+    /*
     const response = await apiService.post<LoginResponse>(
       API_CONFIG.ENDPOINTS.AUTH.LOGIN,
       credentials
@@ -22,6 +96,7 @@ class AuthService {
     }
     
     return response.data;
+    */
   }
 
   async refreshToken(): Promise<LoginResponse> {
@@ -30,6 +105,23 @@ class AuthService {
       throw new Error('No refresh token available');
     }
 
+    // Mock refresh for now
+    const mockUser = this.mockUsers.find(user => 
+      user.response.refreshToken === refreshToken
+    );
+
+    if (!mockUser) {
+      throw new Error('Invalid refresh token');
+    }
+
+    const response = mockUser.response;
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+
+    return response;
+
+    // TODO: Uncomment this when ready to use real backend
+    /*
     const response = await apiService.post<LoginResponse>(
       API_CONFIG.ENDPOINTS.AUTH.REFRESH,
       { refreshToken } as RefreshTokenRequest
@@ -41,11 +133,13 @@ class AuthService {
     }
 
     return response.data;
+    */
   }
 
   async logout(): Promise<void> {
     try {
-      await apiService.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+      // TODO: Uncomment this when ready to use real backend
+      // await apiService.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

@@ -16,6 +16,11 @@ const LoginPage = () => {
     await login(email, password);
   };
 
+  const handleDemoLogin = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('admin123');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-900 to-blue-800 p-4">
       <Card className="w-full max-w-md">
@@ -72,12 +77,32 @@ const LoginPage = () => {
           </form>
           
           <div className="mt-6 text-sm text-muted-foreground">
-            <div className="space-y-1">
-              <div className="font-medium">Tài khoản demo:</div>
-              <div>• admin@viettel.com - Admin</div>
-              <div>• pm@viettel.com - Project Manager</div>
-              <div>• employee@viettel.com - Employee</div>
-              <div className="text-xs mt-2">Mật khẩu: admin123</div>
+            <div className="space-y-2">
+              <div className="font-medium">Tài khoản demo (click để điền):</div>
+              <div className="space-y-1">
+                <button 
+                  type="button"
+                  onClick={() => handleDemoLogin('admin@viettel.com')}
+                  className="block w-full text-left p-2 rounded hover:bg-gray-100 transition-colors"
+                >
+                  • admin@viettel.com - Admin
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleDemoLogin('pm@viettel.com')}
+                  className="block w-full text-left p-2 rounded hover:bg-gray-100 transition-colors"
+                >
+                  • pm@viettel.com - Project Manager
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleDemoLogin('employee@viettel.com')}
+                  className="block w-full text-left p-2 rounded hover:bg-gray-100 transition-colors"
+                >
+                  • employee@viettel.com - Employee
+                </button>
+              </div>
+              <div className="text-xs mt-2 text-center">Mật khẩu: admin123</div>
             </div>
           </div>
         </CardContent>
