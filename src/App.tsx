@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Layout from "./components/Layout";
@@ -20,6 +20,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -34,6 +35,22 @@ const AppContent = () => {
 
   if (!user) {
     return <LoginPage />;
+  }
+
+  // Define restricted routes and their required roles
+  const restrictedRoutes = {
+    '/projects': ['admin', 'pm'],
+    '/employees': ['admin', 'pm'],
+    '/pm-tools': ['admin'],
+    '/settings': ['admin']
+  };
+
+  // Check if current path is restricted and user doesn't have access
+  const currentPath = location.pathname;
+  const requiredRoles = restrictedRoutes[currentPath as keyof typeof restrictedRoutes];
+  
+  if (requiredRoles && !requiredRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
   }
 
   const DashboardComponent = user.role === 'employee' ? EmployeeDashboard : Dashboard;
