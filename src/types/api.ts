@@ -63,28 +63,32 @@ export interface EmployeeRole {
 
 // Employee Request Types
 export interface CreateEmployeeRequest {
+  code: string;
   name: string;
   email: string;
+  password: string;
+  roleId: number;
   gender?: string;
-  dateOfBirth?: string;
   department?: string;
   position?: string;
   level?: string;
   phone?: string;
   address?: string;
-  roleId: number;
 }
 
 export interface UpdateEmployeeRequest {
-  name?: string;
+  name: string;
+  email: string;
+  roleId?: number;
   gender?: string;
-  dateOfBirth?: string;
+  dateOfBirth?: string; // Will be converted to LocalDate by backend
   department?: string;
   position?: string;
   level?: string;
   phone?: string;
   address?: string;
-  roleId?: number;
+  isEnabled?: boolean;
+  isLocked?: boolean;
 }
 
 export interface ChangePasswordRequest {
@@ -137,10 +141,12 @@ export interface CreateProjectRequest {
   projectCode: string;
   name: string;
   pmEmail: string;
-  startDate: string;
-  endDate?: string;
-  projectType: ProjectType;
   description?: string;
+  startDate: string; // Will be converted to LocalDate by backend
+  endDate?: string; // Will be converted to LocalDate by backend
+  projectType: ProjectType;
+  projectStatus: ProjectStatus;
+  budget?: number;
 }
 
 export interface UpdateProjectRequest {
@@ -152,6 +158,7 @@ export interface UpdateProjectRequest {
   projectType?: ProjectType;
   projectStatus?: ProjectStatus;
   description?: string;
+  budget?: number;
 }
 
 // Dashboard Types (matching backend responses)

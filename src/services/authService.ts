@@ -59,7 +59,7 @@ class AuthService {
         API_CONFIG.ENDPOINTS.AUTH.LOGIN,
         credentials
       );
-      
+
       if (response.data) {
         // Store tokens
         localStorage.setItem('accessToken', response.data.accessToken);
@@ -71,7 +71,7 @@ class AuthService {
           role: this.mapBackendRoleToFrontend(response.data.role),
         }));
       }
-      
+
       return response.data;
     } catch (error) {
       console.error('Login failed:', error);
@@ -95,7 +95,7 @@ class AuthService {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const response = mockUser.response;
-    
+
     // Store tokens
     localStorage.setItem('accessToken', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
@@ -105,7 +105,7 @@ class AuthService {
       fullName: response.name,
       role: this.mapBackendRoleToFrontend(response.role),
     }));
-    
+
     return response;
   }
 
@@ -128,7 +128,7 @@ class AuthService {
       if (response.data) {
         localStorage.setItem('accessToken', response.data.accessToken);
         localStorage.setItem('refreshToken', response.data.refreshToken);
-        
+
         // Update user info if provided
         const currentUser = this.getCurrentUser();
         if (currentUser) {
@@ -207,7 +207,7 @@ class AuthService {
   getCurrentUser(): { id: string; email: string; fullName: string; role: 'admin' | 'pm' | 'employee' } | null {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
-    
+
     try {
       return JSON.parse(userStr);
     } catch (error) {
@@ -217,12 +217,13 @@ class AuthService {
   }
 
   private mapBackendRoleToFrontend(backendRole: string): 'admin' | 'pm' | 'employee' {
-    switch (backendRole.toLowerCase()) {
-      case 'admin':
+    switch (backendRole.toUpperCase()) {
+      case 'ADMIN':
         return 'admin';
-      case 'project_manager':
-      case 'pm':
+      case 'PROJECT_MANAGER':
         return 'pm';
+      case 'EMPLOYEE':
+        return 'employee';
       default:
         return 'employee';
     }

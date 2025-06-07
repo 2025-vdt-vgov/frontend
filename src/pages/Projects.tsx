@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash, Folder } from 'lucide-react';
+import { Plus, Edit, Trash, Folder, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { projectService } from '@/services';
 import { Project, ProjectStatus, ProjectType, PagedResponse, ProjectSearchParams } from '@/types/api';
+import CreateProjectForm from '@/components/projects/CreateProjectForm';
+import EditProjectForm from '@/components/projects/EditProjectForm';
+import ProjectEmployeeAssignmentModal from '@/components/projects/ProjectEmployeeAssignmentModal';
 
 const Projects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -18,6 +21,10 @@ const Projects = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const pageSize = 12;
 
   useEffect(() => {
@@ -28,23 +35,23 @@ const Projects = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const searchParams: ProjectSearchParams = {
         page: currentPage,
         size: pageSize,
         search: searchTerm
       };
-      
+
       if (filterStatus !== 'all') {
         searchParams.projectStatus = filterStatus as ProjectStatus;
       }
-      
+
       if (filterType !== 'all') {
         searchParams.projectType = filterType as ProjectType;
       }
-      
+
       const response: PagedResponse<Project> = await projectService.getProjects(searchParams);
-      
+
       setProjects(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -81,6 +88,20 @@ const Projects = () => {
         alert('Không thể xóa dự án. Vui lòng thử lại.');
       }
     }
+  };
+
+  const handleEditProject = (project: Project) => {
+    setSelectedProject(project);
+    setShowEditForm(true);
+  };
+
+  const handleAssignEmployees = (project: Project) => {
+    setSelectedProject(project);
+    setShowAssignmentModal(true);
+  };
+
+  const handleFormSuccess = () => {
+    fetchProjects();
   };
 
   const calculateProgress = (project: Project) => {
@@ -137,7 +158,7 @@ const Projects = () => {
             onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 ml-4">
+        <Button className="bg-blue-600 hover:bg-blue-700 ml-4" onClick={() => setShowCreateForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Thêm dự án
         </Button>
@@ -229,7 +250,10 @@ const Projects = () => {
                         <CardTitle className="text-lg">{project.name}</CardTitle>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleAssignEmployees(project)} title="Phân công nhân viên">
+                          <UserPlus className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEditProject(project)} title="Chỉnh sửa">
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
@@ -237,6 +261,7 @@ const Projects = () => {
                           size="sm"
                           className="text-red-600 hover:text-red-700"
                           onClick={() => handleDeleteProject(project.id)}
+                          title="Xóa"
                         >
                           <Trash className="w-4 h-4" />
                         </Button>
@@ -345,6 +370,29 @@ const Projects = () => {
           )}
         </>
       )}
+
+      {/* Create Project Form */}
+      <CreateProjectForm
+        open={showCreateForm}
+        onOpenChange={setShowCreateForm}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Edit Project Form */}
+      <EditProjectForm
+        open={showEditForm}
+        onOpenChange={setShowEditForm}
+        onSuccess={handleFormSuccess}
+        project={selectedProject}
+      />
+
+      {/* Project Employee Assignment Modal */}
+      <ProjectEmployeeAssignmentModal
+        open={showAssignmentModal}
+        onOpenChange={setShowAssignmentModal}
+        onSuccess={handleFormSuccess}
+        project={selectedProject}
+      />
     </div>
   );
 };

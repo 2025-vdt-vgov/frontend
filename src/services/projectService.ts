@@ -8,7 +8,8 @@ import {
   ProjectSearchParams,
   ProjectType,
   ProjectStatus,
-  ProjectEmployee
+  ProjectEmployee,
+  Employee
 } from '@/types/api';
 
 class ProjectService {
@@ -78,7 +79,7 @@ class ProjectService {
 
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (params?.page !== undefined) queryParams.append('page', params.page.toString());
       if (params?.size !== undefined) queryParams.append('size', params.size.toString());
       if (params?.search) queryParams.append('search', params.search);
@@ -92,7 +93,7 @@ class ProjectService {
 
       const url = `${API_CONFIG.ENDPOINTS.PROJECTS.LIST}?${queryParams.toString()}`;
       const response = await apiService.get<PagedResponse<Project>>(url);
-      
+
       return response.data;
     } catch (error) {
       console.error('Get projects failed:', error);
@@ -145,7 +146,7 @@ class ProjectService {
       filteredProjects.sort((a, b) => {
         const aValue = a[params.sortBy as keyof Project];
         const bValue = b[params.sortBy as keyof Project];
-        
+
         if (params.sortDir === 'desc') {
           return bValue > aValue ? 1 : -1;
         }
@@ -189,12 +190,12 @@ class ProjectService {
 
   private async mockGetProjectById(id: number): Promise<Project> {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     const project = this.mockProjects.find(proj => proj.id === id);
     if (!project) {
       throw new Error(`Project with id ${id} not found`);
     }
-    
+
     return project;
   }
 
@@ -214,7 +215,7 @@ class ProjectService {
 
   private async mockCreateProject(projectData: CreateProjectRequest): Promise<Project> {
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const newProject: Project = {
       id: Math.max(...this.mockProjects.map(p => p.id)) + 1,
       projectCode: projectData.projectCode,
@@ -228,7 +229,7 @@ class ProjectService {
       createdDate: new Date().toISOString().split('T')[0],
       employees: []
     };
-    
+
     this.mockProjects.push(newProject);
     return newProject;
   }
@@ -249,17 +250,17 @@ class ProjectService {
 
   private async mockUpdateProject(id: number, projectData: UpdateProjectRequest): Promise<Project> {
     await new Promise(resolve => setTimeout(resolve, 400));
-    
+
     const projectIndex = this.mockProjects.findIndex(proj => proj.id === id);
     if (projectIndex === -1) {
       throw new Error(`Project with id ${id} not found`);
     }
-    
+
     this.mockProjects[projectIndex] = {
       ...this.mockProjects[projectIndex],
       ...projectData
     };
-    
+
     return this.mockProjects[projectIndex];
   }
 
@@ -278,12 +279,12 @@ class ProjectService {
 
   private async mockDeleteProject(id: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const projectIndex = this.mockProjects.findIndex(proj => proj.id === id);
     if (projectIndex === -1) {
       throw new Error(`Project with id ${id} not found`);
     }
-    
+
     this.mockProjects.splice(projectIndex, 1);
   }
 
@@ -302,12 +303,12 @@ class ProjectService {
 
   private async mockAssignEmployeeToProject(projectId: number, employeeId: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const project = this.mockProjects.find(proj => proj.id === projectId);
     if (!project) {
       throw new Error(`Project with id ${projectId} not found`);
     }
-    
+
     // Check if employee is already assigned
     const isAlreadyAssigned = project.employees?.some(emp => emp.id === employeeId);
     if (!isAlreadyAssigned) {
@@ -320,7 +321,7 @@ class ProjectService {
         position: 'Developer',
         level: 'Junior'
       };
-      
+
       project.employees = project.employees || [];
       project.employees.push(mockEmployee);
     }
@@ -341,12 +342,12 @@ class ProjectService {
 
   private async mockRemoveEmployeeFromProject(projectId: number, employeeId: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const project = this.mockProjects.find(proj => proj.id === projectId);
     if (!project) {
       throw new Error(`Project with id ${projectId} not found`);
     }
-    
+
     if (project.employees) {
       project.employees = project.employees.filter(emp => emp.id !== employeeId);
     }
@@ -368,13 +369,91 @@ class ProjectService {
 
   private async mockSearchProjects(searchTerm: string): Promise<Project[]> {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     const searchLower = searchTerm.toLowerCase();
     return this.mockProjects.filter(proj =>
       proj.name.toLowerCase().includes(searchLower) ||
       proj.projectCode.toLowerCase().includes(searchLower) ||
       proj.pmEmail.toLowerCase().includes(searchLower)
     );
+  }
+  async getProjectEmployees(projectId: number): Promise<Employee[]> {
+    if (this.useMockMode) {
+      return this.mockGetProjectEmployees(projectId);
+    }
+
+    try {
+      const response = await apiService.get<Employee[]>(API_CONFIG.ENDPOINTS.PROJECTS.BY_ID(projectId) + '/employees');
+      return response.data;
+    } catch (error) {
+      console.error(`Get project ${projectId} employees failed:`, error);
+      throw error;
+    }
+  }
+
+  private async mockGetProjectEmployees(projectId: number): Promise<Employee[]> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const project = this.mockProjects.find(proj => proj.id === projectId);
+    if (!project) {
+      throw new Error(`Project with id ${projectId} not found`);
+    }
+
+    // Convert ProjectEmployee to Employee format
+    return (project.employees || []).map(emp => ({
+      id: emp.id,
+      code: emp.code,
+      name: emp.name,
+      email: emp.email,
+      position: emp.position,
+      level: emp.level,
+      isEnabled: true,
+      isLocked: false,
+      role: { id: 3, name: 'EMPLOYEE', description: 'Employee' },
+      department: 'Development',
+      createdDate: '2023-01-01',
+      projectNames: []
+    }));
+  }
+
+  async assignEmployeesToProject(projectId: number, employeeIds: number[]): Promise<void> {
+    if (this.useMockMode) {
+      return this.mockAssignEmployeesToProject(projectId, employeeIds);
+    }
+
+    try {
+      await apiService.post(API_CONFIG.ENDPOINTS.PROJECTS.ASSIGN_EMPLOYEE(projectId, 0), { employeeIds });
+    } catch (error) {
+      console.error(`Assign employees to project ${projectId} failed:`, error);
+      throw error;
+    }
+  }
+
+  private async mockAssignEmployeesToProject(projectId: number, employeeIds: number[]): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const project = this.mockProjects.find(proj => proj.id === projectId);
+    if (!project) {
+      throw new Error(`Project with id ${projectId} not found`);
+    }
+
+    project.employees = project.employees || [];
+
+    // Add employees that aren't already assigned
+    employeeIds.forEach(employeeId => {
+      const isAlreadyAssigned = project.employees?.some(emp => emp.id === employeeId);
+      if (!isAlreadyAssigned) {
+        const mockEmployee: ProjectEmployee = {
+          id: employeeId,
+          code: `EMP${String(employeeId).padStart(3, '0')}`,
+          name: `Employee ${employeeId}`,
+          email: `employee${employeeId}@viettel.com`,
+          position: 'Developer',
+          level: 'Junior'
+        };
+        project.employees.push(mockEmployee);
+      }
+    });
   }
 
   // Utility method to enable/disable mock mode

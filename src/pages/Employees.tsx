@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash, Users } from 'lucide-react';
+import { Plus, Edit, Trash, Users, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { employeeService } from '@/services';
 import { Employee, EmployeeRole, PagedResponse, EmployeeSearchParams } from '@/types/api';
+import CreateEmployeeForm from '@/components/employees/CreateEmployeeForm';
+import EditEmployeeForm from '@/components/employees/EditEmployeeForm';
+import EmployeeProjectAssignmentModal from '@/components/employees/EmployeeProjectAssignmentModal';
 
 const Employees = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -18,6 +21,10 @@ const Employees = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const pageSize = 12;
 
   useEffect(() => {
@@ -28,19 +35,19 @@ const Employees = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const searchParams: EmployeeSearchParams = {
         page: currentPage,
         size: pageSize,
         search: searchTerm
       };
-      
+
       if (filterRole !== 'all') {
         searchParams.role = filterRole;
       }
-      
+
       const response: PagedResponse<Employee> = await employeeService.getEmployees(searchParams);
-      
+
       setEmployees(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -74,6 +81,20 @@ const Employees = () => {
     }
   };
 
+  const handleEditEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setShowEditForm(true);
+  };
+
+  const handleAssignProjects = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setShowAssignmentModal(true);
+  };
+
+  const handleFormSuccess = () => {
+    fetchEmployees();
+  };
+
   // Filter employees locally for project assignment (since backend doesn't support this filter)
   const filteredEmployees = employees.filter(employee => {
     if (filterProject === 'all') return true;
@@ -84,7 +105,7 @@ const Employees = () => {
 
   const getRoleColor = (role?: EmployeeRole) => {
     if (!role) return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    
+
     switch (role.name) {
       case 'ADMIN': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       case 'PROJECT_MANAGER':
@@ -96,7 +117,7 @@ const Employees = () => {
 
   const getRoleText = (role?: EmployeeRole) => {
     if (!role) return 'Không xác định';
-    
+
     switch (role.name) {
       case 'ADMIN': return 'Admin';
       case 'PROJECT_MANAGER':
@@ -116,7 +137,7 @@ const Employees = () => {
             onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 ml-4">
+        <Button className="bg-blue-600 hover:bg-blue-700 ml-4" onClick={() => setShowCreateForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Thêm nhân viên
         </Button>
@@ -209,7 +230,10 @@ const Employees = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleAssignProjects(employee)} title="Phân công dự án">
+                        <UserPlus className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleEditEmployee(employee)} title="Chỉnh sửa">
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
@@ -217,6 +241,7 @@ const Employees = () => {
                         size="sm"
                         className="text-red-600 hover:text-red-700"
                         onClick={() => handleDeleteEmployee(employee.id)}
+                        title="Xóa"
                       >
                         <Trash className="w-4 h-4" />
                       </Button>
@@ -311,6 +336,29 @@ const Employees = () => {
           )}
         </>
       )}
+
+      {/* Create Employee Form */}
+      <CreateEmployeeForm
+        open={showCreateForm}
+        onOpenChange={setShowCreateForm}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Edit Employee Form */}
+      <EditEmployeeForm
+        open={showEditForm}
+        onOpenChange={setShowEditForm}
+        onSuccess={handleFormSuccess}
+        employee={selectedEmployee}
+      />
+
+      {/* Employee Project Assignment Modal */}
+      <EmployeeProjectAssignmentModal
+        open={showAssignmentModal}
+        onOpenChange={setShowAssignmentModal}
+        onSuccess={handleFormSuccess}
+        employee={selectedEmployee}
+      />
     </div>
   );
 };

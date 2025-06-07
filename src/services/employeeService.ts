@@ -67,7 +67,7 @@ class EmployeeService {
 
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (params?.page !== undefined) queryParams.append('page', params.page.toString());
       if (params?.size !== undefined) queryParams.append('size', params.size.toString());
       if (params?.search) queryParams.append('search', params.search);
@@ -82,7 +82,7 @@ class EmployeeService {
 
       const url = `${API_CONFIG.ENDPOINTS.EMPLOYEES.LIST}?${queryParams.toString()}`;
       const response = await apiService.get<PagedResponse<Employee>>(url);
-      
+
       return response.data;
     } catch (error) {
       console.error('Get employees failed:', error);
@@ -141,7 +141,7 @@ class EmployeeService {
       filteredEmployees.sort((a, b) => {
         const aValue = a[params.sortBy as keyof Employee];
         const bValue = b[params.sortBy as keyof Employee];
-        
+
         if (params.sortDir === 'desc') {
           return bValue > aValue ? 1 : -1;
         }
@@ -185,12 +185,12 @@ class EmployeeService {
 
   private async mockGetEmployeeById(id: number): Promise<Employee> {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     const employee = this.mockEmployees.find(emp => emp.id === id);
     if (!employee) {
       throw new Error(`Employee with id ${id} not found`);
     }
-    
+
     return employee;
   }
 
@@ -207,17 +207,15 @@ class EmployeeService {
       throw error;
     }
   }
-
   private async mockCreateEmployee(employeeData: CreateEmployeeRequest): Promise<Employee> {
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const newEmployee: Employee = {
       id: Math.max(...this.mockEmployees.map(e => e.id)) + 1,
-      code: `EMP${String(Math.max(...this.mockEmployees.map(e => e.id)) + 1).padStart(3, '0')}`,
+      code: employeeData.code,
       name: employeeData.name,
       email: employeeData.email,
       gender: employeeData.gender,
-      dateOfBirth: employeeData.dateOfBirth,
       department: employeeData.department,
       position: employeeData.position,
       level: employeeData.level,
@@ -229,18 +227,17 @@ class EmployeeService {
       createdDate: new Date().toISOString().split('T')[0],
       projectNames: []
     };
-    
+
     this.mockEmployees.push(newEmployee);
     return newEmployee;
   }
-
   async updateEmployee(id: number, employeeData: UpdateEmployeeRequest): Promise<Employee> {
     if (this.useMockMode) {
       return this.mockUpdateEmployee(id, employeeData);
     }
 
     try {
-      const response = await apiService.put<Employee>(`${API_CONFIG.ENDPOINTS.EMPLOYEES.UPDATE}/${id}`, employeeData);
+      const response = await apiService.put<Employee>(API_CONFIG.ENDPOINTS.EMPLOYEES.UPDATE(id), employeeData);
       return response.data;
     } catch (error) {
       console.error(`Update employee ${id} failed:`, error);
@@ -250,27 +247,26 @@ class EmployeeService {
 
   private async mockUpdateEmployee(id: number, employeeData: UpdateEmployeeRequest): Promise<Employee> {
     await new Promise(resolve => setTimeout(resolve, 400));
-    
+
     const employeeIndex = this.mockEmployees.findIndex(emp => emp.id === id);
     if (employeeIndex === -1) {
       throw new Error(`Employee with id ${id} not found`);
     }
-    
+
     this.mockEmployees[employeeIndex] = {
       ...this.mockEmployees[employeeIndex],
       ...employeeData
     };
-    
+
     return this.mockEmployees[employeeIndex];
   }
-
   async deleteEmployee(id: number): Promise<void> {
     if (this.useMockMode) {
       return this.mockDeleteEmployee(id);
     }
 
     try {
-      await apiService.delete(`${API_CONFIG.ENDPOINTS.EMPLOYEES.DELETE}/${id}`);
+      await apiService.delete(API_CONFIG.ENDPOINTS.EMPLOYEES.DELETE(id));
     } catch (error) {
       console.error(`Delete employee ${id} failed:`, error);
       throw error;
@@ -279,12 +275,12 @@ class EmployeeService {
 
   private async mockDeleteEmployee(id: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const employeeIndex = this.mockEmployees.findIndex(emp => emp.id === id);
     if (employeeIndex === -1) {
       throw new Error(`Employee with id ${id} not found`);
     }
-    
+
     this.mockEmployees.splice(employeeIndex, 1);
   }
 
@@ -303,12 +299,12 @@ class EmployeeService {
 
   private async mockAssignProjectToEmployee(employeeId: number, projectId: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const employee = this.mockEmployees.find(emp => emp.id === employeeId);
     if (!employee) {
       throw new Error(`Employee with id ${employeeId} not found`);
     }
-    
+
     // Add project name to projectNames array if not already present
     const projectName = `Project ${projectId}`;
     if (!employee.projectNames?.includes(projectName)) {
@@ -332,12 +328,12 @@ class EmployeeService {
 
   private async mockUnassignProjectFromEmployee(employeeId: number, projectId: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const employee = this.mockEmployees.find(emp => emp.id === employeeId);
     if (!employee) {
       throw new Error(`Employee with id ${employeeId} not found`);
     }
-    
+
     // Remove project name from projectNames array
     const projectName = `Project ${projectId}`;
     if (employee.projectNames) {
@@ -361,12 +357,12 @@ class EmployeeService {
 
   private async mockGetEmployeeProjects(employeeId: number): Promise<string[]> {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     const employee = this.mockEmployees.find(emp => emp.id === employeeId);
     if (!employee) {
       throw new Error(`Employee with id ${employeeId} not found`);
     }
-    
+
     return employee.projectNames || [];
   }
 
@@ -385,15 +381,97 @@ class EmployeeService {
 
   private async mockChangePassword(id: number, passwordData: ChangePasswordRequest): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     const employee = this.mockEmployees.find(emp => emp.id === id);
     if (!employee) {
       throw new Error(`Employee with id ${id} not found`);
     }
-    
+
     // In a real implementation, you would validate the current password
     // For mock mode, we'll just simulate success
     console.log(`Mock: Password changed for employee ${id}`);
+  }
+  async getEmployeeRoles(): Promise<EmployeeRole[]> {
+    if (this.useMockMode) {
+      return this.mockGetEmployeeRoles();
+    }
+
+    try {
+      const response = await apiService.get<EmployeeRole[]>(`${API_CONFIG.ENDPOINTS.EMPLOYEES.LIST}/roles`);
+      return response.data;
+    } catch (error) {
+      console.error('Get employee roles failed:', error);
+      throw error;
+    }
+  }
+
+  private async mockGetEmployeeRoles(): Promise<EmployeeRole[]> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    return [
+      { id: 1, name: 'ADMIN', description: 'Administrator' },
+      { id: 2, name: 'PROJECT_MANAGER', description: 'Project Manager' },
+      { id: 3, name: 'EMPLOYEE', description: 'Employee' }
+    ];
+  }
+
+  async assignProjectsToEmployee(employeeId: number, projectIds: number[]): Promise<void> {
+    if (this.useMockMode) {
+      return this.mockAssignProjectsToEmployee(employeeId, projectIds);
+    }
+
+    try {
+      await apiService.post(API_CONFIG.ENDPOINTS.EMPLOYEES.ASSIGN_PROJECT(employeeId, 0), { projectIds });
+    } catch (error) {
+      console.error(`Assign projects to employee ${employeeId} failed:`, error);
+      throw error;
+    }
+  }
+
+  private async mockAssignProjectsToEmployee(employeeId: number, projectIds: number[]): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const employee = this.mockEmployees.find(emp => emp.id === employeeId);
+    if (!employee) {
+      throw new Error(`Employee with id ${employeeId} not found`);
+    }
+
+    // Add project names to projectNames array
+    projectIds.forEach(projectId => {
+      const projectName = `Project ${projectId}`;
+      if (!employee.projectNames?.includes(projectName)) {
+        employee.projectNames = employee.projectNames || [];
+        employee.projectNames.push(projectName);
+      }
+    });
+  }
+
+  async removeProjectFromEmployee(employeeId: number, projectId: number): Promise<void> {
+    if (this.useMockMode) {
+      return this.mockRemoveProjectFromEmployee(employeeId, projectId);
+    }
+
+    try {
+      await apiService.delete(API_CONFIG.ENDPOINTS.EMPLOYEES.UNASSIGN_PROJECT(employeeId, projectId));
+    } catch (error) {
+      console.error(`Remove project ${projectId} from employee ${employeeId} failed:`, error);
+      throw error;
+    }
+  }
+
+  private async mockRemoveProjectFromEmployee(employeeId: number, projectId: number): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const employee = this.mockEmployees.find(emp => emp.id === employeeId);
+    if (!employee) {
+      throw new Error(`Employee with id ${employeeId} not found`);
+    }
+
+    // Remove project name from projectNames array
+    const projectName = `Project ${projectId}`;
+    if (employee.projectNames) {
+      employee.projectNames = employee.projectNames.filter(name => name !== projectName);
+    }
   }
 
   // Utility method to enable/disable mock mode
