@@ -13,7 +13,7 @@ import {
 
 class ProjectService {
   // Flag to enable/disable mock mode for development
-  private useMockMode = false; // Set to true to use mock data during development
+  private useMockMode = false; // Mock mode disabled - using real API
 
   // Mock data for development (kept for fallback)
   private mockProjects: Project[] = [
@@ -95,8 +95,8 @@ class ProjectService {
       
       return response.data;
     } catch (error) {
-      console.error('Get projects failed, falling back to mock mode:', error);
-      return this.mockGetProjects(params);
+      console.error('Get projects failed:', error);
+      throw error;
     }
   }
 
@@ -182,8 +182,8 @@ class ProjectService {
       const response = await apiService.get<Project>(API_CONFIG.ENDPOINTS.PROJECTS.BY_ID(id));
       return response.data;
     } catch (error) {
-      console.error(`Get project ${id} failed, falling back to mock mode:`, error);
-      return this.mockGetProjectById(id);
+      console.error(`Get project ${id} failed:`, error);
+      throw error;
     }
   }
 
@@ -207,8 +207,8 @@ class ProjectService {
       const response = await apiService.post<Project>(API_CONFIG.ENDPOINTS.PROJECTS.CREATE, projectData);
       return response.data;
     } catch (error) {
-      console.error('Create project failed, falling back to mock mode:', error);
-      return this.mockCreateProject(projectData);
+      console.error('Create project failed:', error);
+      throw error;
     }
   }
 
@@ -242,8 +242,8 @@ class ProjectService {
       const response = await apiService.put<Project>(API_CONFIG.ENDPOINTS.PROJECTS.UPDATE(id), projectData);
       return response.data;
     } catch (error) {
-      console.error(`Update project ${id} failed, falling back to mock mode:`, error);
-      return this.mockUpdateProject(id, projectData);
+      console.error(`Update project ${id} failed:`, error);
+      throw error;
     }
   }
 
@@ -271,8 +271,8 @@ class ProjectService {
     try {
       await apiService.delete(API_CONFIG.ENDPOINTS.PROJECTS.DELETE(id));
     } catch (error) {
-      console.error(`Delete project ${id} failed, falling back to mock mode:`, error);
-      return this.mockDeleteProject(id);
+      console.error(`Delete project ${id} failed:`, error);
+      throw error;
     }
   }
 
@@ -295,8 +295,8 @@ class ProjectService {
     try {
       await apiService.post(API_CONFIG.ENDPOINTS.PROJECTS.ASSIGN_EMPLOYEE(projectId, employeeId));
     } catch (error) {
-      console.error(`Assign employee ${employeeId} to project ${projectId} failed, falling back to mock mode:`, error);
-      return this.mockAssignEmployeeToProject(projectId, employeeId);
+      console.error(`Assign employee ${employeeId} to project ${projectId} failed:`, error);
+      throw error;
     }
   }
 
@@ -334,8 +334,8 @@ class ProjectService {
     try {
       await apiService.delete(API_CONFIG.ENDPOINTS.PROJECTS.REMOVE_EMPLOYEE(projectId, employeeId));
     } catch (error) {
-      console.error(`Remove employee ${employeeId} from project ${projectId} failed, falling back to mock mode:`, error);
-      return this.mockRemoveEmployeeFromProject(projectId, employeeId);
+      console.error(`Remove employee ${employeeId} from project ${projectId} failed:`, error);
+      throw error;
     }
   }
 
@@ -361,8 +361,8 @@ class ProjectService {
       const response = await apiService.get<Project[]>(`${API_CONFIG.ENDPOINTS.PROJECTS.SEARCH}?q=${encodeURIComponent(searchTerm)}`);
       return response.data;
     } catch (error) {
-      console.error('Search projects failed, falling back to mock mode:', error);
-      return this.mockSearchProjects(searchTerm);
+      console.error('Search projects failed:', error);
+      throw error;
     }
   }
 

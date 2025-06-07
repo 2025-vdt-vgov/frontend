@@ -12,7 +12,7 @@ import {
 
 class EmployeeService {
   // Flag to enable/disable mock mode for development
-  private useMockMode = false; // Set to true to use mock data during development
+  private useMockMode = false; // Mock mode disabled - using real API
 
   // Mock data for development (kept for fallback)
   private mockEmployees: Employee[] = [
@@ -85,8 +85,8 @@ class EmployeeService {
       
       return response.data;
     } catch (error) {
-      console.error('Get employees failed, falling back to mock mode:', error);
-      return this.mockGetEmployees(params);
+      console.error('Get employees failed:', error);
+      throw error;
     }
   }
 
@@ -178,8 +178,8 @@ class EmployeeService {
       const response = await apiService.get<Employee>(API_CONFIG.ENDPOINTS.EMPLOYEES.BY_ID(id));
       return response.data;
     } catch (error) {
-      console.error(`Get employee ${id} failed, falling back to mock mode:`, error);
-      return this.mockGetEmployeeById(id);
+      console.error(`Get employee ${id} failed:`, error);
+      throw error;
     }
   }
 
@@ -203,8 +203,8 @@ class EmployeeService {
       const response = await apiService.post<Employee>(API_CONFIG.ENDPOINTS.EMPLOYEES.CREATE, employeeData);
       return response.data;
     } catch (error) {
-      console.error('Create employee failed, falling back to mock mode:', error);
-      return this.mockCreateEmployee(employeeData);
+      console.error('Create employee failed:', error);
+      throw error;
     }
   }
 
@@ -243,8 +243,8 @@ class EmployeeService {
       const response = await apiService.put<Employee>(`${API_CONFIG.ENDPOINTS.EMPLOYEES.UPDATE}/${id}`, employeeData);
       return response.data;
     } catch (error) {
-      console.error(`Update employee ${id} failed, falling back to mock mode:`, error);
-      return this.mockUpdateEmployee(id, employeeData);
+      console.error(`Update employee ${id} failed:`, error);
+      throw error;
     }
   }
 
@@ -272,8 +272,8 @@ class EmployeeService {
     try {
       await apiService.delete(`${API_CONFIG.ENDPOINTS.EMPLOYEES.DELETE}/${id}`);
     } catch (error) {
-      console.error(`Delete employee ${id} failed, falling back to mock mode:`, error);
-      return this.mockDeleteEmployee(id);
+      console.error(`Delete employee ${id} failed:`, error);
+      throw error;
     }
   }
 
@@ -296,8 +296,8 @@ class EmployeeService {
     try {
       await apiService.post(API_CONFIG.ENDPOINTS.EMPLOYEES.ASSIGN_PROJECT(employeeId, projectId));
     } catch (error) {
-      console.error(`Assign project ${projectId} to employee ${employeeId} failed, falling back to mock mode:`, error);
-      return this.mockAssignProjectToEmployee(employeeId, projectId);
+      console.error(`Assign project ${projectId} to employee ${employeeId} failed:`, error);
+      throw error;
     }
   }
 
@@ -325,8 +325,8 @@ class EmployeeService {
     try {
       await apiService.delete(API_CONFIG.ENDPOINTS.EMPLOYEES.UNASSIGN_PROJECT(employeeId, projectId));
     } catch (error) {
-      console.error(`Unassign project ${projectId} from employee ${employeeId} failed, falling back to mock mode:`, error);
-      return this.mockUnassignProjectFromEmployee(employeeId, projectId);
+      console.error(`Unassign project ${projectId} from employee ${employeeId} failed:`, error);
+      throw error;
     }
   }
 
@@ -354,8 +354,8 @@ class EmployeeService {
       const response = await apiService.get<string[]>(API_CONFIG.ENDPOINTS.EMPLOYEES.PROJECTS(employeeId));
       return response.data;
     } catch (error) {
-      console.error(`Get employee ${employeeId} projects failed, falling back to mock mode:`, error);
-      return this.mockGetEmployeeProjects(employeeId);
+      console.error(`Get employee ${employeeId} projects failed:`, error);
+      throw error;
     }
   }
 
@@ -378,8 +378,8 @@ class EmployeeService {
     try {
       await apiService.post(API_CONFIG.ENDPOINTS.EMPLOYEES.CHANGE_PASSWORD(id), passwordData);
     } catch (error) {
-      console.error(`Change password for employee ${id} failed, falling back to mock mode:`, error);
-      return this.mockChangePassword(id, passwordData);
+      console.error(`Change password for employee ${id} failed:`, error);
+      throw error;
     }
   }
 

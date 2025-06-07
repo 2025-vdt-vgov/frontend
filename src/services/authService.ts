@@ -4,7 +4,7 @@ import { LoginRequest, LoginResponse, RefreshTokenRequest } from '@/types/api';
 
 class AuthService {
   // Flag to enable/disable mock mode for development
-  private useMockMode = false; // Set to true to use mock data during development
+  private useMockMode = false; // Mock mode disabled - using real API
 
   // Mock users for development (kept for fallback)
   private mockUsers = [
@@ -74,9 +74,8 @@ class AuthService {
       
       return response.data;
     } catch (error) {
-      console.error('Login failed, falling back to mock mode:', error);
-      // Fallback to mock mode if backend is not available
-      return this.mockLogin(credentials);
+      console.error('Login failed:', error);
+      throw error;
     }
   }
 
@@ -142,8 +141,8 @@ class AuthService {
 
       return response.data;
     } catch (error) {
-      console.error('Token refresh failed, falling back to mock mode:', error);
-      return this.mockRefreshToken(refreshToken);
+      console.error('Token refresh failed:', error);
+      throw error;
     }
   }
 
