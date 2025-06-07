@@ -1,37 +1,95 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Folder, Check, BarChart } from 'lucide-react';
+import { dashboardService } from '@/services';
+import { DashboardProjectStats, DashboardEmployeeStats } from '@/types/api';
 
 const DashboardStats = () => {
-  const stats = [
+  const [projectStats, setProjectStats] = useState<DashboardProjectStats | null>(null);
+  const [employeeStats, setEmployeeStats] = useState<DashboardEmployeeStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [projectData, employeeData] = await Promise.all([
+          dashboardService.getProjectStats(),
+          dashboardService.getEmployeeStats()
+        ]);
+        setProjectStats(projectData);
+        setEmployeeStats(employeeData);
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        setError('Failed to load dashboard statistics');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, index) => (
+          <div
+            key={index}
+            className="relative bg-card pt-5 px-4 pb-5 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden border animate-pulse"
+          >
+            <div className="absolute rounded-md p-3 bg-gray-300 w-12 h-12"></div>
+            <div className="ml-16 space-y-2">
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+              <div className="h-8 bg-gray-300 rounded w-16"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !projectStats || !employeeStats) {
+    return (
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="col-span-full text-center py-8 text-red-600">
+          {error || 'Failed to load statistics'}
+        </div>
+      </div>
+    );
+  }
+
+  const statsData = [
     {
       name: 'Tổng dự án',
-      value: '24',
-      change: '+12%',
+      value: projectStats.totalProjects.toString(),
+      change: `+${Math.round((projectStats.activeProjects / Math.max(projectStats.totalProjects - projectStats.activeProjects, 1)) * 100)}%`,
       changeType: 'increase',
       icon: Folder,
       color: 'bg-blue-500',
     },
     {
       name: 'Nhân sự',
-      value: '156',
-      change: '+8%',
+      value: employeeStats.totalEmployees.toString(),
+      change: `+${Math.round((employeeStats.activeEmployees / Math.max(employeeStats.totalEmployees - employeeStats.activeEmployees, 1)) * 100)}%`,
       changeType: 'increase',
       icon: Users,
       color: 'bg-green-500',
     },
     {
       name: 'Dự án hoàn thành',
-      value: '18',
-      change: '+5%',
+      value: projectStats.completedProjects.toString(),
+      change: `+${Math.round(projectStats.projectCompletionRate - 70)}%`,
       changeType: 'increase',
       icon: Check,
       color: 'bg-purple-500',
     },
     {
       name: 'Hiệu suất',
-      value: '85%',
-      change: '+2%',
+      value: `${Math.round(projectStats.projectCompletionRate)}%`,
+      change: `+${Math.round(employeeStats.employeeUtilization - 80)}%`,
       changeType: 'increase',
       icon: BarChart,
       color: 'bg-orange-500',
@@ -40,7 +98,7 @@ const DashboardStats = () => {
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => {
+      {statsData.map((stat) => {
         const Icon = stat.icon;
         return (
           <div

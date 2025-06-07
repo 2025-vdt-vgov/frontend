@@ -3,7 +3,10 @@ import { API_CONFIG } from '@/config/api';
 import { LoginRequest, LoginResponse, RefreshTokenRequest } from '@/types/api';
 
 class AuthService {
-  // Mock users for development
+  // Flag to enable/disable mock mode for development
+  private useMockMode = false; // Set to true to use mock data during development
+
+  // Mock users for development (kept for fallback)
   private mockUsers = [
     {
       email: 'admin@viettel.com',
@@ -47,7 +50,37 @@ class AuthService {
   ];
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    // Use mock authentication for now
+    if (this.useMockMode) {
+      return this.mockLogin(credentials);
+    }
+
+    try {
+      const response = await apiService.post<LoginResponse>(
+        API_CONFIG.ENDPOINTS.AUTH.LOGIN,
+        credentials
+      );
+      
+      if (response.data) {
+        // Store tokens
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        localStorage.setItem('user', JSON.stringify({
+          id: response.data.employeeId.toString(),
+          email: response.data.email,
+          fullName: response.data.name,
+          role: this.mapBackendRoleToFrontend(response.data.role),
+        }));
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Login failed, falling back to mock mode:', error);
+      // Fallback to mock mode if backend is not available
+      return this.mockLogin(credentials);
+    }
+  }
+
+  private async mockLogin(credentials: LoginRequest): Promise<LoginResponse> {
     const mockUser = this.mockUsers.find(
       user => user.email === credentials.email && user.password === credentials.password
     );
@@ -75,28 +108,6 @@ class AuthService {
     }));
     
     return response;
-
-    // TODO: Uncomment this when ready to use real backend
-    /*
-    const response = await apiService.post<LoginResponse>(
-      API_CONFIG.ENDPOINTS.AUTH.LOGIN,
-      credentials
-    );
-    
-    if (response.data) {
-      // Store tokens
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify({
-        id: response.data.employeeId.toString(),
-        email: response.data.email,
-        fullName: response.data.name,
-        role: this.mapBackendRoleToFrontend(response.data.role),
-      }));
-    }
-    
-    return response.data;
-    */
   }
 
   async refreshToken(): Promise<LoginResponse> {
@@ -105,8 +116,39 @@ class AuthService {
       throw new Error('No refresh token available');
     }
 
-    // Mock refresh for now
-    const mockUser = this.mockUsers.find(user => 
+    if (this.useMockMode) {
+      return this.mockRefreshToken(refreshToken);
+    }
+
+    try {
+      const response = await apiService.post<LoginResponse>(
+        API_CONFIG.ENDPOINTS.AUTH.REFRESH,
+        { refreshToken } as RefreshTokenRequest
+      );
+
+      if (response.data) {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        
+        // Update user info if provided
+        const currentUser = this.getCurrentUser();
+        if (currentUser) {
+          localStorage.setItem('user', JSON.stringify({
+            ...currentUser,
+            // Update any user info from refresh response if needed
+          }));
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Token refresh failed, falling back to mock mode:', error);
+      return this.mockRefreshToken(refreshToken);
+    }
+  }
+
+  private async mockRefreshToken(refreshToken: string): Promise<LoginResponse> {
+    const mockUser = this.mockUsers.find(user =>
       user.response.refreshToken === refreshToken
     );
 
@@ -119,29 +161,27 @@ class AuthService {
     localStorage.setItem('refreshToken', response.refreshToken);
 
     return response;
-
-    // TODO: Uncomment this when ready to use real backend
-    /*
-    const response = await apiService.post<LoginResponse>(
-      API_CONFIG.ENDPOINTS.AUTH.REFRESH,
-      { refreshToken } as RefreshTokenRequest
-    );
-
-    if (response.data) {
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-
-    return response.data;
-    */
   }
 
   async logout(): Promise<void> {
     try {
-      // TODO: Uncomment this when ready to use real backend
-      // await apiService.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+      if (!this.useMockMode) {
+        await apiService.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+      }
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      this.clearTokens();
+    }
+  }
+
+  async logoutAll(email: string): Promise<void> {
+    try {
+      if (!this.useMockMode) {
+        await apiService.post(`${API_CONFIG.ENDPOINTS.AUTH.LOGOUT_ALL}?email=${encodeURIComponent(email)}`);
+      }
+    } catch (error) {
+      console.error('Logout all error:', error);
     } finally {
       this.clearTokens();
     }
@@ -163,6 +203,18 @@ class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
+  }
+
+  getCurrentUser(): { id: string; email: string; fullName: string; role: 'admin' | 'pm' | 'employee' } | null {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      return null;
+    }
   }
 
   private mapBackendRoleToFrontend(backendRole: string): 'admin' | 'pm' | 'employee' {

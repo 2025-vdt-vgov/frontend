@@ -1,14 +1,16 @@
-// Base API Response Type
+// Base API Response Type (matches backend BaseResponse)
 export interface ApiResponse<T = any> {
   code: number;
   message: string;
   data: T;
+  error?: string;
 }
 
 // Error Response Type
 export interface ApiError {
   code: number;
   message: string;
+  error?: string;
   errors?: string[];
 }
 
@@ -32,62 +34,191 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
-// User/Employee Types
+// Employee Types (matching backend EmployeeResponse)
 export interface Employee {
   id: number;
-  email: string;
+  code: string;
   name: string;
-  role: string;
-  employeeCode: string;
+  email: string;
+  gender?: string;
+  dateOfBirth?: string;
   department?: string;
   position?: string;
+  level?: string;
   phone?: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  createdAt: string;
-  updatedAt: string;
+  address?: string;
+  lastLogin?: string;
+  createdDate?: string;
+  isEnabled: boolean;
+  isLocked: boolean;
+  role?: EmployeeRole;
+  projectNames?: string[];
 }
 
-// Project Types
-export interface Project {
+export interface EmployeeRole {
   id: number;
   name: string;
-  description: string;
-  status: 'PLANNING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  startDate: string;
-  endDate: string;
-  budget: number;
-  progress: number;
-  managerId: number;
-  teamMembers: number[];
-  createdAt: string;
-  updatedAt: string;
+  description?: string;
 }
 
-// Dashboard Types
-export interface DashboardStats {
+// Employee Request Types
+export interface CreateEmployeeRequest {
+  name: string;
+  email: string;
+  gender?: string;
+  dateOfBirth?: string;
+  department?: string;
+  position?: string;
+  level?: string;
+  phone?: string;
+  address?: string;
+  roleId: number;
+}
+
+export interface UpdateEmployeeRequest {
+  name?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  department?: string;
+  position?: string;
+  level?: string;
+  phone?: string;
+  address?: string;
+  roleId?: number;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Project Types (matching backend ProjectResponse)
+export interface Project {
+  id: number;
+  projectCode: string;
+  name: string;
+  pmEmail: string;
+  startDate: string;
+  endDate?: string;
+  projectType: ProjectType;
+  projectStatus: ProjectStatus;
+  description?: string;
+  createdDate?: string;
+  employees?: ProjectEmployee[];
+}
+
+export interface ProjectEmployee {
+  id: number;
+  code: string;
+  name: string;
+  email: string;
+  position?: string;
+  level?: string;
+}
+
+export enum ProjectType {
+  INTERNAL = 'INTERNAL',
+  EXTERNAL = 'EXTERNAL',
+  RESEARCH = 'RESEARCH',
+  MAINTENANCE = 'MAINTENANCE'
+}
+
+export enum ProjectStatus {
+  PLANNING = 'PLANNING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  ON_HOLD = 'ON_HOLD'
+}
+
+// Project Request Types
+export interface CreateProjectRequest {
+  projectCode: string;
+  name: string;
+  pmEmail: string;
+  startDate: string;
+  endDate?: string;
+  projectType: ProjectType;
+  description?: string;
+}
+
+export interface UpdateProjectRequest {
+  projectCode?: string;
+  name?: string;
+  pmEmail?: string;
+  startDate?: string;
+  endDate?: string;
+  projectType?: ProjectType;
+  projectStatus?: ProjectStatus;
+  description?: string;
+}
+
+// Dashboard Types (matching backend responses)
+export interface DashboardProjectStats {
   totalProjects: number;
   activeProjects: number;
   completedProjects: number;
+  plannedProjects: number;
+  cancelledProjects: number;
+  onHoldProjects: number;
+  projectCompletionRate: number;
+  averageProjectDuration: number;
+}
+
+export interface DashboardEmployeeStats {
   totalEmployees: number;
   activeEmployees: number;
-  projectCompletionRate: number;
+  lockedEmployees: number;
+  disabledEmployees: number;
+  employeesByDepartment: Record<string, number>;
+  employeesByLevel: Record<string, number>;
   employeeUtilization: number;
 }
 
-// Pagination Types
+export interface ProjectStatsResponse {
+  totalProjects: number;
+  projectsByStatus: Record<string, number>;
+  projectsByType: Record<string, number>;
+  averageDuration: number;
+  completionRate: number;
+}
+
+// Pagination Types (matching backend PagedResponse)
 export interface PaginationParams {
   page?: number;
   size?: number;
-  sort?: string;
-  direction?: 'ASC' | 'DESC';
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  search?: string;
 }
 
-export interface PaginatedResponse<T> {
+export interface PagedResponse<T> {
   content: T[];
+  page: number;
+  size: number;
   totalElements: number;
   totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+// Search Parameters
+export interface EmployeeSearchParams extends PaginationParams {
+  name?: string;
+  email?: string;
+  department?: string;
+  level?: string;
+  role?: string;
+  projectId?: number;
+}
+
+export interface ProjectSearchParams extends PaginationParams {
+  projectType?: ProjectType;
+  projectStatus?: ProjectStatus;
+  startDateFrom?: string;
+  startDateTo?: string;
+  pmEmail?: string;
 }

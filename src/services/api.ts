@@ -27,7 +27,24 @@ class ApiService {
       throw errorData;
     }
 
-    return response.json();
+    const result = await response.json();
+    
+    // Backend returns BaseResponse<T> format: { code, message, data }
+    // We need to extract the data and maintain the wrapper structure
+    if (result && typeof result === 'object' && 'code' in result && 'data' in result) {
+      return {
+        code: result.code,
+        message: result.message,
+        data: result.data
+      };
+    }
+    
+    // Fallback for direct data responses
+    return {
+      code: response.status,
+      message: 'Success',
+      data: result
+    };
   }
 
   private async request<T>(
